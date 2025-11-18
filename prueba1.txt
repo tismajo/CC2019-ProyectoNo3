@@ -1,0 +1,48 @@
+q_states:
+  q_list: ["q0", "q1", "qf"]
+  initial: "q0"
+  final: "qf"
+
+alphabet: ["a"]
+tape_alphabet: ["a", "_"]
+
+delta:
+  # Leer 'a' por primera vez → mem=0 → cambiamos a mem=1
+  - params:
+      initial_state: "q0"
+      mem_cache_value: ""
+      tape_input: "a"
+    output:
+      final_state: "q1"
+      mem_cache_value: "1"
+      tape_output: "a"
+      tape_displacement: "R"
+
+  # Desde q1 con mem=1, si leemos 'a', cambiamos mem a 0
+  - params:
+      initial_state: "q1"
+      mem_cache_value: "1"
+      tape_input: "a"
+    output:
+      final_state: "q0"
+      mem_cache_value: ""
+      tape_output: "a"
+      tape_displacement: "R"
+
+  # FIN: Si estamos en q0 y encontramos blank → aceptamos
+  - params:
+      initial_state: "q0"
+      mem_cache_value: ""
+      tape_input: ""
+    output:
+      final_state: "qf"
+      mem_cache_value: ""
+      tape_output: ""
+      tape_displacement: "S"
+
+simulation_strings:
+  - ""
+  - "a"
+  - "aa"
+  - "aaa"
+  - "aaaa"

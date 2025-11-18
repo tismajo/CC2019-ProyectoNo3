@@ -6,14 +6,13 @@ import (
 	"os"
 
 	"gopkg.in/yaml.v3"
-	"io/ioutil"
 )
 
 func main() {
 	yamlPath := flag.String("config", "info.yaml", "ruta al archivo YAML con la descripción de la MT")
 	flag.Parse()
 
-	data, err := ioutil.ReadFile(*yamlPath)
+	data, err := os.ReadFile(*yamlPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error leyendo archivo YAML: %v\n", err)
 		os.Exit(1)
@@ -53,6 +52,6 @@ func main() {
 		} else {
 			fmt.Printf(">> Resultado: RECHAZADA (no hay transición aplicable hacia estado final)\n")
 		}
-		fmt.Println("======================================\n")
+		fmt.Println("======================================")
 	}
 }

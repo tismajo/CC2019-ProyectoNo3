@@ -1,0 +1,48 @@
+q_states:
+  q_list: ["q0", "qf"]
+  initial: "q0"
+  final: "qf"
+
+alphabet: ["a", "b"]
+tape_alphabet: ["a", "b", "_"]
+
+delta:
+  # a -> b y mover a la derecha
+  - params:
+      initial_state: "q0"
+      mem_cache_value: ""
+      tape_input: "a"
+    output:
+      final_state: "q0"
+      mem_cache_value: ""
+      tape_output: "b"
+      tape_displacement: "R"
+
+  # b -> b (deja igual) y mover a la derecha
+  - params:
+      initial_state: "q0"
+      mem_cache_value: ""
+      tape_input: "b"
+    output:
+      final_state: "q0"
+      mem_cache_value: ""
+      tape_output: "b"
+      tape_displacement: "R"
+
+  # Cuando llega al blank, acepta
+  - params:
+      initial_state: "q0"
+      mem_cache_value: ""
+      tape_input: ""
+    output:
+      final_state: "qf"
+      mem_cache_value: ""
+      tape_output: ""
+      tape_displacement: "S"
+
+simulation_strings:
+  - ""
+  - "a"
+  - "b"
+  - "aaab"
+  - "abbaaa"

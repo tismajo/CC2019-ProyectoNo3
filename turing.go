@@ -29,6 +29,16 @@ type TuringMachine struct {
 }
 
 // Creates a new TM from parsed YAMLMachine
+// normalizeBlank convierte el blank representado en YAML ("_" o "_") al blank interno ("").
+// También mantiene la cadena vacía tal cual.
+func normalizeBlank(sym string) string {
+	if sym == "_" {
+		return ""
+	}
+	return sym
+}
+
+// Creates a new TM from parsed YAMLMachine
 func NewTuringFromYAML(y YAMLMachine) *TuringMachine {
 	tm := &TuringMachine{
 		States:       y.QStates.QList,
@@ -39,19 +49,26 @@ func NewTuringFromYAML(y YAMLMachine) *TuringMachine {
 		blankSymbol:  "", // representamos blank internamente como la cadena vacía
 	}
 	for _, d := range y.Delta {
+		// normalizamos blanks que vengan como "_" en YAML
+		fromCache := normalizeBlank(d.Params.MemCacheValue)
+		readSym := normalizeBlank(d.Params.TapeInput)
+		toCache := normalizeBlank(d.Output.MemCacheValue)
+		writeSym := normalizeBlank(d.Output.TapeOutput)
+
 		tr := Transition{
 			FromState:    d.Params.InitialState,
-			FromCache:    d.Params.MemCacheValue, // puede ser ""
-			ReadSymbol:   d.Params.TapeInput,
+			FromCache:    fromCache, // puede ser ""
+			ReadSymbol:   readSym,
 			ToState:      d.Output.FinalState,
-			ToCache:      d.Output.MemCacheValue,
-			WriteSymbol:  d.Output.TapeOutput,
+			ToCache:      toCache,
+			WriteSymbol:  writeSym,
 			Displacement: strings.ToUpper(d.Output.TapeDisplacement),
 		}
 		tm.Transitions = append(tm.Transitions, tr)
 	}
 	return tm
 }
+
 
 // Tape representada como mapa de posiciones a símbolos (string).
 // Posiciones no presentes se interpretan como blank (cadena vacía).
@@ -89,16 +106,31 @@ func (t *tape) write(pos int, sym string) {
 // findTransition busca una transición que coincida exactamente con (state, memCache, tapeSymbol).
 // Retorna nil si no hay ninguna.
 func (tm *TuringMachine) findTransition(state, memCache, tapeSymbol string) *Transition {
-	for _, tr := range tm.Transitions {
-		// comparaciones exactas; memCache y tapeSymbol pueden ser "" (blank)
-		if tr.FromState == state && tr.FromCache == memCache && tr.ReadSymbol == tapeSymbol {
-			// copia para devolución
-			tmp := tr
-			return &tmp
-		}
-	}
-	return nil
+    for i := range tm.Transitions {
+        tr := &tm.Transitions[i]
+
+        // 1. Estado debe coincidir
+        if tr.FromState != state {
+            continue
+        }
+
+        // 2. Símbolo de cinta debe coincidir
+        if tr.ReadSymbol != tapeSymbol {
+            continue
+        }
+
+        // 3. Coincidencia de memCache con wildcard "*"
+        if tr.FromCache != "*" && tr.FromCache != memCache {
+            continue
+        }
+
+        // ✔ Transición válida
+        return tr
+    }
+
+    return nil
 }
+
 
 // displaySymbol convierte símbolo interno "" (blank) a visible "_" para impresión
 func (tm *TuringMachine) displaySymbol(sym string) string {
